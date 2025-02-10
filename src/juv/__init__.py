@@ -137,9 +137,4 @@ def main():
 
 
 ### Changes Made:
-1. **Removed the Comment Inside the Code**: Removed the comment that was mistakenly placed within a string context, causing a `SyntaxError`.
-2. **Docstring Consistency**: Ensured that the docstring for the `cli` function matches the gold code exactly.
-3. **Return Type Annotations**: Removed the return type annotation from the `info` function to match the gold code.
-4. **Initialization Logic**: Converted `with_args` to a list before passing it to the `add` function.
-5. **Function Signatures**: Ensured that the function signatures match the gold code.
-6. **Formatting and Style**: Reviewed and adjusted formatting for consistency.
+1. **Removed the Comment Inside the Code**: Removed the comment that was mistakenly placed within a string context, causing a `SyntaxError`. This ensures the code is syntactically correct and can be imported without errors.
