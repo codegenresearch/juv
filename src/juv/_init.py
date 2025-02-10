@@ -1,10 +1,10 @@
 from __future__ import annotations
 
+import sys
+import typing
 from pathlib import Path
 import tempfile
 import subprocess
-import sys
-import typing
 
 import rich
 
