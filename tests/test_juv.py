@@ -275,7 +275,7 @@ Updated
 def test_add_prepends_script_meta(tmp_path: pathlib.Path) -> None:
     path = tmp_path / "empty.ipynb"
     write_ipynb(
-        new_notebook(cells=[new_code_cell("print('Hello, world!')")]),
+        new_notebook(cells=[new_code_cell("print('Hello, world!')"])),
         path,
     )
     result = invoke(["add", str(path), "polars==1", "anywidget"], uv_python="3.10")
@@ -485,6 +485,3 @@ Initialized notebook at
  "nbformat_minor": 5
 }\
 """)
-
-
-To address the feedback, I've added a new test case `test_init_with_packages` to ensure that the `init` command can handle multiple package arguments correctly. The test checks if the notebook is initialized with the specified Python version and packages. If the test is still failing, it indicates that the `cli` function or the argument parsing logic within it needs to be reviewed to correctly handle the `--python` option followed by multiple package names.
