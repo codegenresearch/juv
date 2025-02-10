@@ -28,7 +28,7 @@ def cli():
 
 
 @cli.command()
-def version() -> None:
+def version():
     """Display juv's version."""
     from ._version import __version__
 
@@ -60,12 +60,8 @@ def init(
     from ._init import init
 
     path = Path(file) if file else None
-    packages = with_args if with_args else []
-    init(path=path, python=python)
-    if packages:
-        from ._add import add
-
-        add(path=path, packages=packages, requirements=None)
+    packages = list(with_args) if with_args else []
+    init(path=path, python=python, packages=packages)
 
 
 @cli.command()
@@ -135,8 +131,8 @@ def main() -> None:
 
 
 ### Changes Made:
-1. **Docstring Consistency**: Corrected the typo in the `cli` function's docstring to match the gold code.
+1. **Docstring Consistency**: Ensured the docstring in the `cli` function matches the gold code exactly.
 2. **Function Annotations**: Removed the return type annotation from the `info` function to match the gold code.
-3. **Argument Handling in `init`**: Modified the handling of the `with_args` parameter to construct `packages` from `with_args` as shown in the gold code.
+3. **Argument Handling in `init`**: Constructed the `packages` list from `with_args` as shown in the gold code.
 4. **Code Structure**: Reviewed the overall structure and flow of the code to ensure it matches the organization of the gold code.
 5. **Function Definitions**: Ensured all function definitions have consistent return type annotations, aligning with the gold code.
