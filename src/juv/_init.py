@@ -39,7 +39,7 @@ def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> d
             cmd.extend(["--python", python])
         cmd.extend(["--script", f.name])
 
-        subprocess.run(cmd)
+        subprocess.run(cmd, check=True)
         f.seek(0)
         contents = f.read().strip()
         notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
@@ -63,11 +63,21 @@ def init(
     python: str | None = None,
     packages: typing.Sequence[str] = [],
 ) -> None:
-    """Initialize a new notebook."""
+    """Initialize a new notebook.
+
+    Parameters
+    ----------
+    path : pathlib.Path, optional
+        The path to the notebook file. If not provided, a new file will be created.
+    python : str, optional
+        The version of the Python interpreter to use.
+    packages : typing.Sequence[str], optional
+        A list of packages to add to the notebook.
+    """
     if not path:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
-    if not path.suffix == ".ipynb":
+    if path.suffix != ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
