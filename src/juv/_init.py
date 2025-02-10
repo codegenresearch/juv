@@ -9,7 +9,6 @@ import typing
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
-from ._add import add
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -66,8 +65,12 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
     ValueError
         If no available UntitledX.ipynb file path is found within the first 100 attempts.
     """
-    for i in range(100):
-        candidate_path = dir / f"Untitled{i}.ipynb" if i else dir / "Untitled.ipynb"
+    base_path = dir / "Untitled.ipynb"
+    if not base_path.exists():
+        return base_path
+
+    for i in range(1, 100):
+        candidate_path = dir / f"Untitled{i}.ipynb"
         if not candidate_path.exists():
             return candidate_path
 
@@ -104,4 +107,5 @@ def init(
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
 
     if packages:
+        from ._add import add
         add(path, packages, requirements=None)
