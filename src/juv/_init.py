@@ -80,7 +80,7 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 def init(
     path: Path | None = None,
     python: str | None = None,
-    packages: typing.Sequence[str] = (),
+    packages: typing.Sequence[str] = [],
 ) -> None:
     """Initialize a new notebook with optional Python version and packages.
 
@@ -94,7 +94,7 @@ def init(
     packages : typing.Sequence[str], optional
         A sequence of packages to include in the notebook metadata.
     """
-    if path is None:
+    if not path:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
     if path.suffix != ".ipynb":
