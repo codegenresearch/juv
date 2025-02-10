@@ -42,10 +42,11 @@ def new_notebook_with_inline_metadata(
         if python:
             cmd.extend(["--python", python])
         if packages:
-            cmd.extend(["--with", ",".join(packages)])
+            for package in packages:
+                cmd.extend(["--with", package])
         cmd.extend(["--script", f.name])
 
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd)
         f.seek(0)
         contents = f.read().strip()
         notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
@@ -53,7 +54,7 @@ def new_notebook_with_inline_metadata(
     return notebook
 
 
-def find_available_notebook_path(dir: Path) -> Path:
+def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
     """Find the first available UntitledX.ipynb file path in the given directory.
 
     Parameters
@@ -86,7 +87,7 @@ def find_available_notebook_path(dir: Path) -> Path:
 def init(
     path: Path | None = None,
     python: str | None = None,
-    packages: list[str] | None = None,
+    packages: list[str] = [],
 ) -> None:
     """Initialize a new notebook with optional Python version and packages.
 
@@ -101,7 +102,7 @@ def init(
         A list of packages to include in the notebook metadata.
     """
     if path is None:
-        path = find_available_notebook_path(Path.cwd())
+        path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
     if path.suffix != ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
