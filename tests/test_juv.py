@@ -219,7 +219,7 @@ def test_run_jlab() -> None:
         runtime=Runtime("lab", None),
         pep723_meta=Pep723Meta(dependencies=["numpy"], requires_python="3.8"),
         python=None,
-        with_args=["polars,altair"],
+        with_args=["polars", "altair"],
     ) == snapshot([
         "--from=jupyter-core",
         "--with=setuptools",
@@ -283,7 +283,7 @@ Updated
 def test_add_prepends_script_meta(tmp_path: pathlib.Path) -> None:
     path = tmp_path / "empty.ipynb"
     write_ipynb(
-        new_notebook(cells=[new_code_cell("print('Hello, world!')")]),
+        new_notebook(cells=[new_code_cell("print('Hello, world!')"]),
         path,
     )
     result = invoke(["add", str(path), "polars==1", "anywidget"], uv_python="3.10")
