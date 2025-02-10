@@ -66,9 +66,12 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
     ValueError
         If no available UntitledX.ipynb file is found.
     """
-    for i in range(100):
-        filename = f"Untitled{i}.ipynb" if i else "Untitled.ipynb"
-        path = dir / filename
+    base_path = dir / "Untitled.ipynb"
+    if not base_path.exists():
+        return base_path
+
+    for i in range(1, 100):
+        path = dir / f"Untitled{i}.ipynb"
         if not path.exists():
             return path
 
@@ -109,8 +112,8 @@ def init(
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if len(packages) > 0:
+    if packages:
         from ._add import add
-        add(path, packages, requirements=None)
+        add(path=path, packages=packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
