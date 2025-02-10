@@ -1,10 +1,10 @@
 from __future__ import annotations
 
 import sys
-import typing
-from pathlib import Path
 import tempfile
 import subprocess
+from pathlib import Path
+import typing
 
 import rich
 
@@ -71,7 +71,7 @@ def init(
     if not path:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
-    if not path.suffix == ".ipynb":
+    if path.suffix != ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
@@ -80,6 +80,7 @@ def init(
 
     if len(packages) > 0:
         from ._add import add
+
         add(path=path, packages=packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
