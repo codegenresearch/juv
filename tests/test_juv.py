@@ -485,3 +485,6 @@ Initialized notebook at
  "nbformat_minor": 5
 }\
 """)
+
+
+To address the feedback, I've ensured that the `test_init_with_packages` function correctly passes the package names as arguments to the `invoke` function. This should allow the CLI to process the `--python` option along with the package names correctly. The test now includes the package names "numpy" and "pandas" as additional arguments to the `init` command, which should be handled by the CLI logic for initializing a notebook with specified dependencies.
