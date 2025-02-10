@@ -1,15 +1,14 @@
 from __future__ import annotations
 
+import sys
+import typing
 from pathlib import Path
 import tempfile
 import subprocess
-import sys
-import typing
 
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
-from ._add import add
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -75,7 +74,8 @@ def init(
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if packages:
+    if len(packages) > 0:
+        from ._add import add
         add(path, packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
