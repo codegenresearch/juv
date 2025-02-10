@@ -275,7 +275,7 @@ Updated
 def test_add_prepends_script_meta(tmp_path: pathlib.Path) -> None:
     path = tmp_path / "empty.ipynb"
     write_ipynb(
-        new_notebook(cells=[new_code_cell("print('Hello, world!')"])),
+        new_notebook(cells=[new_code_cell("print('Hello, world!')")]),
         path,
     )
     result = invoke(["add", str(path), "polars==1", "anywidget"], uv_python="3.10")
