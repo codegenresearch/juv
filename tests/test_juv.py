@@ -160,15 +160,14 @@ def test_python_override() -> None:
     assert prepare_uvx_args(
         target=Path("test.ipynb"),
         runtime=Runtime("nbclassic", None),
-        pep723_meta=Pep723Meta(dependencies=["numpy"], requires_python="3.8"),
+        pep723_meta=Pep723Meta(dependencies=["numpy", "pandas"], requires_python="3.8"),
         with_args=["polars"],
         python="3.12",
     ) == snapshot([
         "--from=jupyter-core",
         "--with=setuptools",
-        "--with=polars",
+        "--with=polars,numpy,pandas",
         "--python=3.12",
-        "--with=numpy",
         "--with=nbclassic",
         "jupyter",
         "nbclassic",
@@ -180,15 +179,14 @@ def test_run_nbclassic() -> None:
     assert prepare_uvx_args(
         target=Path("test.ipynb"),
         runtime=Runtime("nbclassic", None),
-        pep723_meta=Pep723Meta(dependencies=["numpy"], requires_python="3.8"),
+        pep723_meta=Pep723Meta(dependencies=["numpy", "pandas"], requires_python="3.8"),
         python=None,
         with_args=["polars"],
     ) == snapshot([
         "--from=jupyter-core",
         "--with=setuptools",
-        "--with=polars",
+        "--with=polars,numpy,pandas",
         "--python=3.8",
-        "--with=numpy",
         "--with=nbclassic",
         "jupyter",
         "nbclassic",
@@ -217,15 +215,14 @@ def test_run_jlab() -> None:
     assert prepare_uvx_args(
         target=Path("test.ipynb"),
         runtime=Runtime("lab", None),
-        pep723_meta=Pep723Meta(dependencies=["numpy"], requires_python="3.8"),
+        pep723_meta=Pep723Meta(dependencies=["numpy", "pandas"], requires_python="3.8"),
         python=None,
         with_args=["polars", "altair"],
     ) == snapshot([
         "--from=jupyter-core",
         "--with=setuptools",
-        "--with=polars,altair",
+        "--with=polars,altair,numpy,pandas",
         "--python=3.8",
-        "--with=numpy",
         "--with=jupyterlab",
         "jupyter",
         "lab",
@@ -283,7 +280,7 @@ Updated
 def test_add_prepends_script_meta(tmp_path: pathlib.Path) -> None:
     path = tmp_path / "empty.ipynb"
     write_ipynb(
-        new_notebook(cells=[new_code_cell("print('Hello, world!')")]),
+        new_notebook(cells=[new_code_cell("print('Hello, world!')"]),
         path,
     )
     result = invoke(["add", str(path), "polars==1", "anywidget"], uv_python="3.10")
