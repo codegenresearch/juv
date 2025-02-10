@@ -9,11 +9,10 @@ import typing
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
+from ._add import add
 
 
-def new_notebook_with_inline_metadata(
-    dir: Path, python: str | None = None, packages: list[str] | None = None
-) -> dict:
+def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
     """Create a new notebook with inline metadata.
 
     Parameters
@@ -23,8 +22,6 @@ def new_notebook_with_inline_metadata(
         defer the selection of Python (if not specified) to uv.
     python : str, optional
         A version of the Python interpreter. Provided as `--python` to uv if specified.
-    packages : list[str], optional
-        A list of packages to include in the notebook metadata.
 
     Returns
     -------
@@ -41,9 +38,6 @@ def new_notebook_with_inline_metadata(
         cmd = ["uv", "init", "--quiet"]
         if python:
             cmd.extend(["--python", python])
-        if packages:
-            for package in packages:
-                cmd.extend(["--with", package])
         cmd.extend(["--script", f.name])
 
         subprocess.run(cmd)
@@ -72,12 +66,8 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
     ValueError
         If no available UntitledX.ipynb file path is found within the first 100 attempts.
     """
-    base_path = dir / "Untitled.ipynb"
-    if not base_path.exists():
-        return base_path
-
-    for i in range(1, 100):
-        candidate_path = dir / f"Untitled{i}.ipynb"
+    for i in range(100):
+        candidate_path = dir / f"Untitled{i}.ipynb" if i else dir / "Untitled.ipynb"
         if not candidate_path.exists():
             return candidate_path
 
@@ -87,7 +77,7 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 def init(
     path: Path | None = None,
     python: str | None = None,
-    packages: list[str] = [],
+    packages: typing.Sequence[str] = (),
 ) -> None:
     """Initialize a new notebook with optional Python version and packages.
 
@@ -98,8 +88,8 @@ def init(
         UntitledX.ipynb file path in the current working directory will be used.
     python : str, optional
         The Python version to use for the notebook.
-    packages : list[str], optional
-        A list of packages to include in the notebook metadata.
+    packages : typing.Sequence[str], optional
+        A sequence of packages to include in the notebook metadata.
     """
     if path is None:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
@@ -108,7 +98,10 @@ def init(
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
-    notebook = new_notebook_with_inline_metadata(path.parent, python, packages)
+    notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
+
+    if packages:
+        add(path, packages, requirements=None)
