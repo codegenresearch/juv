@@ -4,10 +4,12 @@ from pathlib import Path
 import tempfile
 import subprocess
 import sys
+import typing
 
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
+from ._add import add
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -38,7 +40,7 @@ def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> d
             cmd.extend(["--python", python])
         cmd.extend(["--script", f.name])
 
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd)
         f.seek(0)
         contents = f.read().strip()
         notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
@@ -60,16 +62,20 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 def init(
     path: Path | None = None,
     python: str | None = None,
+    packages: typing.Sequence[str] = [],
 ) -> None:
     """Initialize a new notebook."""
-    if path is None:
+    if not path:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
-    if path.suffix != ".ipynb":
+    if not path.suffix == ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
+
+    if packages:
+        add(path, packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
