@@ -10,20 +10,16 @@ import rich
 from ._nbconvert import new_notebook, code_cell, write_ipynb
 
 
-def create_notebook_with_inline_metadata(
-    directory: Path, python_version: str | None = None, dependencies: list[str] | None = None
-) -> dict:
+def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
     """Create a new notebook with inline metadata.
 
     Parameters
     ----------
-    directory : pathlib.Path
+    dir : pathlib.Path
         A directory for uv to run `uv init` in. This is used so that we can
         defer the selection of Python (if not specified) to uv.
-    python_version : str, optional
+    python : str, optional
         A version of the Python interpreter. Provided as `--python` to uv if specified.
-    dependencies : list[str], optional
-        A list of dependencies to include in the notebook metadata.
 
     Returns
     -------
@@ -35,78 +31,45 @@ def create_notebook_with_inline_metadata(
         mode="w+",
         suffix=".py",
         delete=True,
-        dir=directory,
-    ) as temp_file:
-        command = ["uv", "init", "--quiet"]
-        if python_version:
-            command.extend(["--python", python_version])
-        if dependencies:
-            command.extend(["--with", ",".join(dependencies)])
-        command.extend(["--script", temp_file.name])
+        dir=dir,
+    ) as f:
+        cmd = ["uv", "init", "--quiet"]
+        if python:
+            cmd.extend(["--python", python])
+        cmd.extend(["--script", f.name])
 
-        subprocess.run(command, check=True)
-        temp_file.seek(0)
-        script_contents = temp_file.read().strip()
-        notebook = new_notebook(cells=[code_cell(script_contents, hidden=True)])
+        subprocess.run(cmd, check=True)
+        f.seek(0)
+        contents = f.read().strip()
+        notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
 
     return notebook
 
 
-def find_available_notebook_path(directory: Path) -> Path:
-    """Find the first available UntitledX.ipynb file path in the given directory.
-
-    Parameters
-    ----------
-    directory : pathlib.Path
-        The directory to search for available UntitledX.ipynb file paths.
-
-    Returns
-    -------
-    pathlib.Path
-        The path to the first available UntitledX.ipynb file.
-
-    Raises
-    ------
-    ValueError
-        If no available UntitledX.ipynb file path is found within the first 100 attempts.
-    """
-    base_path = directory / "Untitled.ipynb"
-    if not base_path.exists():
-        return base_path
+def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
+    if not (dir / "Untitled.ipynb").exists():
+        return dir / "Untitled.ipynb"
 
     for i in range(1, 100):
-        path = directory / f"Untitled{i}.ipynb"
-        if not path.exists():
-            return path
+        if not (dir / f"Untitled{i}.ipynb").exists():
+            return dir / f"Untitled{i}.ipynb"
 
     raise ValueError("Could not find an available UntitledX.ipynb")
 
 
-def initialize_notebook(
+def init(
     path: Path | None = None,
-    python_version: str | None = None,
-    dependencies: list[str] | None = None,
+    python: str | None = None,
 ) -> None:
-    """Initialize a new notebook with optional Python version and dependencies.
-
-    Parameters
-    ----------
-    path : pathlib.Path, optional
-        The path to the notebook file to initialize. If not provided, an available
-        UntitledX.ipynb file path in the current working directory will be used.
-    python_version : str, optional
-        The version of the Python interpreter to use.
-    dependencies : list[str], optional
-        A list of dependencies to include in the notebook metadata.
-    """
+    """Initialize a new notebook."""
     if path is None:
-        path = find_available_notebook_path(Path.cwd())
+        path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
     if path.suffix != ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
-    notebook = create_notebook_with_inline_metadata(path.parent, python_version, dependencies)
+    notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
