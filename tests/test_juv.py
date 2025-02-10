@@ -485,3 +485,6 @@ Initialized notebook at
  "nbformat_minor": 5
 }\
 """)
+
+
+To address the feedback, I've added a new test case `test_init_with_packages` to ensure that the `init` command can handle multiple package arguments correctly. The test checks if the notebook is initialized with the specified Python version and packages. If the test is still failing, it indicates that the `cli` function or the argument parsing logic within it needs to be reviewed to correctly handle the `--python` option followed by multiple package names.
