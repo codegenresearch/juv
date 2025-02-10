@@ -11,7 +11,7 @@ import shutil
 import rich
 
 
-def assert_uv_available() -> None:
+def assert_uv_available():
     if shutil.which("uv") is None:
         rich.print("Error: 'uv' command not found.", file=sys.stderr)
         rich.print("Please install 'uv' to run `juv`.", file=sys.stderr)
@@ -28,7 +28,7 @@ def cli():
 
 
 @cli.command()
-def version() -> None:
+def version():
     """Display juv's version."""
     from ._version import __version__
 
@@ -36,7 +36,7 @@ def version() -> None:
 
 
 @cli.command()
-def info() -> None:
+def info():
     """Display juv and uv versions."""
     from ._version import __version__
 
@@ -60,6 +60,8 @@ def init(
     from ._init import init
 
     path = Path(file) if file else None
+    if path:
+        path.parent.mkdir(parents=True, exist_ok=True)
     init(path=path, python=python)
     if with_args:
         from ._add import add
@@ -76,7 +78,7 @@ def add(
     file: str,
     requirements: str | None,
     packages: tuple[str, ...],
-) -> None:
+):
     """Add dependencies to the notebook."""
     from ._add import add
 
@@ -129,6 +131,6 @@ def upgrade_legacy_jupyter_command(args: list[str]) -> None:
             args[i] = "run"
 
 
-def main() -> None:
+def main():
     upgrade_legacy_jupyter_command(sys.argv)
     cli()
