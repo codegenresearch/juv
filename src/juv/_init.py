@@ -9,7 +9,6 @@ import typing
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
-from ._add import add
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -39,7 +38,7 @@ def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> d
             cmd.extend(["--python", python])
         cmd.extend(["--script", f.name])
 
-        subprocess.run(cmd, check=True)
+        subprocess.run(cmd)
         f.seek(0)
         contents = f.read().strip()
         notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
@@ -80,7 +79,7 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 def init(
     path: Path | None = None,
     python: str | None = None,
-    packages: typing.Sequence[str] = (),
+    packages: typing.Sequence[str] = [],
 ) -> None:
     """Initialize a new notebook with optional Python version and packages.
 
@@ -107,5 +106,6 @@ def init(
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
 
-    if len(packages) > 0:
+    if packages:
+        from ._add import add
         add(path, packages, requirements=None)
