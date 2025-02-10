@@ -11,7 +11,7 @@ import shutil
 import rich
 
 
-def assert_uv_available() -> None:
+def assert_uv_available():
     if shutil.which("uv") is None:
         rich.print("Error: 'uv' command not found.", file=sys.stderr)
         rich.print("Please install 'uv' to run `juv`.", file=sys.stderr)
@@ -23,12 +23,12 @@ def assert_uv_available() -> None:
 
 
 @click.group()
-def cli() -> None:
+def cli():
     """A wrapper around uv to launch ephemeral Jupyter notebooks."""
 
 
 @cli.command()
-def version() -> None:
+def version():
     """Display juv's version."""
     from ._version import __version__
 
@@ -36,7 +36,7 @@ def version() -> None:
 
 
 @cli.command()
-def info() -> None:
+def info():
     """Display juv and uv versions."""
     from ._version import __version__
 
@@ -50,14 +50,20 @@ def info() -> None:
 @cli.command()
 @click.argument("file", type=click.Path(exists=False), required=False)
 @click.option("--python", type=click.STRING, required=False)
+@click.option("--with", "with_args", type=click.STRING, multiple=True)
 def init(
     file: str | None,
     python: str | None,
+    with_args: tuple[str, ...],
 ) -> None:
     """Initialize a new notebook."""
     from ._init import init
 
     init(path=Path(file) if file else None, python=python)
+    if with_args:
+        from ._add import add
+
+        add(path=Path(file) if file else None, packages=with_args, requirements=None)
 
 
 @cli.command()
@@ -121,6 +127,6 @@ def upgrade_legacy_jupyter_command(args: list[str]) -> None:
             args[i] = "run"
 
 
-def main() -> None:
+def main():
     upgrade_legacy_jupyter_command(sys.argv)
     cli()
