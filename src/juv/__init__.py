@@ -24,7 +24,7 @@ def assert_uv_available():
 
 @click.group()
 def cli():
-    """A wrapper around uv to launch ephemeral Jupyter notebooks."""
+    """A wrapper around `uv` to launch ephemeral Jupyter notebooks."""
 
 
 @cli.command()
@@ -50,15 +50,16 @@ def info():
 @cli.command()
 @click.argument("file", type=click.Path(exists=False), required=False)
 @click.option("--python", type=click.STRING, required=False)
-@click.option("--packages", "-p", multiple=True, help="Add package dependencies during initialization.")
+@click.option("--with", "with_args", type=click.STRING, multiple=True, help="Add package dependencies during initialization.")
 def init(
     file: str | None,
     python: str | None,
-    packages: tuple[str, ...],
+    with_args: tuple[str, ...],
 ) -> None:
     """Initialize a new notebook with optional package dependencies."""
     from ._init import init
 
+    packages = list(with_args)  # Convert tuple to list for consistency
     init(path=Path(file) if file else None, python=python, packages=packages)
 
 
