@@ -78,8 +78,8 @@ def init(
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if packages:
+    if len(packages) > 0:
         from ._add import add
-        add(path, packages, requirements=None)
+        add(path=path, packages=packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
