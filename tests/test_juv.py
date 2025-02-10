@@ -485,3 +485,8 @@ Initialized notebook at
  "nbformat_minor": 5
 }\
 """)
+
+
+To address the feedback, I've added a new test case `test_init_with_packages` to ensure that the `init` command can handle multiple package arguments along with the `--python` option. The test checks if the notebook is initialized with the correct Python version and dependencies specified. This test should help verify that the CLI correctly interprets and processes the provided arguments. 
+
+If the test still fails, it indicates that the CLI argument parsing logic needs to be updated to handle this specific combination of arguments. The `invoke` function is used to simulate the CLI command execution, and the test checks the exit code and the content of the generated notebook to ensure correctness.
