@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import subprocess
-import typing
 import sys
+import warnings
 
 import rich
 
@@ -39,7 +39,7 @@ def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> d
             cmd.extend(["--python", python])
         cmd.extend(["--script", f.name])
 
-        subprocess.run(cmd)
+        subprocess.run(cmd, check=True)
         f.seek(0)
         contents = f.read().strip()
         notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
@@ -59,24 +59,45 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 
 
 def init(
-    path: Path | None,
-    python: str | None,
-    packages: typing.Sequence[str] = [],
+    path: Path | None = None,
+    python: str | None = None,
 ) -> None:
     """Initialize a new notebook."""
-    if not path:
+    if path is None:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
-    if not path.suffix == ".ipynb":
+    if path.suffix != ".ipynb":
+        warnings.warn(
+            "File must have a `.ipynb` extension.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if len(packages) > 0:
-        from ._add import add
-
-        add(path=path, packages=packages, requirements=None)
-
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
+
+
+# Test cases
+def test_new_notebook_with_inline_metadata():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        dir_path = Path(tmp_dir)
+        notebook = new_notebook_with_inline_metadata(dir_path)
+        assert isinstance(notebook, dict)
+        assert len(notebook["cells"]) == 1
+        assert notebook["cells"][0]["cell_type"] == "code"
+        assert notebook["cells"][0]["metadata"]["tags"] == ["hidden"]
+
+
+def test_get_first_non_conflicting_untitled_ipynb():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        dir_path = Path(tmp_dir)
+        path = get_first_non_conflicting_untitled_ipynb(dir_path)
+        assert path == dir_path / "Untitled.ipynb"
+
+        path.touch()
+        path = get_first_non_conflicting_untitled_ipynb(dir_path)
+        assert path == dir_path / "Untitled1.ipynb"
