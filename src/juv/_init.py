@@ -1,15 +1,15 @@
 from __future__ import annotations
 
+import sys
+import typing
 from pathlib import Path
 import tempfile
 import subprocess
-import sys
-import typing
 
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
-from ._pep723 import parse_inline_script_metadata, extract_inline_meta
+from ._pep723 import parse_inline_script_metadata, extract_inline_meta, includes_inline_metadata
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -71,7 +71,7 @@ def init(
     if not path:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
-    if not path.suffix == ".ipynb":
+    if path.suffix != ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
@@ -80,6 +80,6 @@ def init(
 
     if len(packages) > 0:
         from ._add import add
-        add(path, packages, requirements=None)
+        add(path=path, packages=packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
