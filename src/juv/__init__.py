@@ -53,18 +53,16 @@ def info():
 @click.option("--with", "with_args", type=click.STRING, multiple=True, help="Add package dependencies during initialization.")
 def init(
     file: str | None,
-    python: str | None,
     with_args: tuple[str, ...],
+    python: str | None,
 ) -> None:
     """Initialize a new notebook with optional package dependencies."""
     from ._init import init
 
     # Process with_args to handle comma-separated values
-    packages = []
-    for arg in with_args:
-        packages.extend(arg.split(','))
+    packages = [pkg for arg in with_args for pkg in arg.split(',')]
 
-    init(path=Path(file) if file else None, python=python, packages=packages)
+    init(path=Path(file) if file else None, packages=packages, python=python)
 
 
 @cli.command()
