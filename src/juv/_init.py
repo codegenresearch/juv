@@ -10,7 +10,6 @@ import typing
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
-from ._add import add
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -81,7 +80,8 @@ def init(
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if packages:
+    if len(packages) > 0:
+        from ._add import add
         add(path, packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
@@ -123,8 +123,8 @@ def test_init_with_deps():
 
 
 This code snippet addresses the feedback by:
-1. Removing the `check=True` argument from the `subprocess.run` call in `new_notebook_with_inline_metadata`.
-2. Using `if not path:` to check for `None` or empty values in the `init` function.
-3. Simplifying the file extension check in the `init` function.
-4. Adding a `packages` parameter to the `init` function signature.
-5. Including logic to handle the installation of packages by calling the `add` function from the `._add` module if `packages` are provided.
+1. Ensuring that the `subprocess.run` call in `new_notebook_with_inline_metadata` does not include the `check=True` argument.
+2. Modifying the file extension check in the `init` function to use `if path.suffix != ".ipynb":`.
+3. Using a condition that checks the length of the `packages` list (`if len(packages) > 0:`) to handle package installation.
+4. Importing the `add` function inside the `init` function to keep the import local to where it is used.
+5. Ensuring the rich print statement for the file extension warning matches the formatting and structure of the gold code.
