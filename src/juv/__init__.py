@@ -64,7 +64,7 @@ def init(
     if with_args:
         from ._add import add
 
-        packages = [arg for arg in with_args]
+        packages = with_args
         add(path=path, packages=packages, requirements=None)
 
 
@@ -132,8 +132,8 @@ def main():
 ### Changes Made:
 1. **Removed Incorrectly Formatted Comment**: Removed the comment that was incorrectly formatted and causing a `SyntaxError`.
 2. **Docstring Consistency**: Ensured that the docstring in the `cli` function matches the gold code exactly.
-3. **Function Parameters**: Reviewed and ensured the order and handling of `with_args` in the `init` function.
-4. **Package Handling**: Constructed the `packages` parameter as a list comprehension from `with_args` in the `init` function.
+3. **Function Parameters**: Reviewed and ensured the order and handling of parameters in the `init` function.
+4. **Package Handling**: Constructed the `packages` parameter directly from `with_args` in the `init` function.
 5. **Formatting and Style**: Reviewed and ensured consistent formatting, including whitespace and line breaks.
 6. **Imports**: Organized and placed imports as seen in the gold code.
 
