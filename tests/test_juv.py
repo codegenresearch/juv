@@ -77,7 +77,6 @@ def test_to_notebook_script(tmp_path: Path):
 # requires-python = ">=3.8"
 # ///
 
-
 import numpy as np
 
 # %%
