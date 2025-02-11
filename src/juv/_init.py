@@ -78,7 +78,7 @@ def init(
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if len(packages) > 0:
+    if packages:
         from ._add import add
         add(path=path, packages=packages, requirements=None)
 
