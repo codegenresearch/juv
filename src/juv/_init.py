@@ -65,7 +65,7 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 def init(
     path: Path | None = None,
     python: str | None = None,
-    packages: typing.Sequence[str] = (),
+    packages: typing.Sequence[str] = [],
 ) -> None:
     """Initialize a new notebook."""
     if not path:
@@ -78,7 +78,7 @@ def init(
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
 
-    if packages:
+    if len(packages) > 0:
         from ._add import add
         add(path, packages, requirements=None)
 
