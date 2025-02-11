@@ -287,7 +287,7 @@ def test_add_prepends_script_meta(tmp_path: pathlib.Path) -> None:
         new_notebook(cells=[new_code_cell("print('Hello, world!')")]),
         path,
     )
-    result = invoke(["add", str(path), "polars==1", "anywidget"], uv_python="33.10")
+    result = invoke(["add", str(path), "polars==1", "anywidget"], uv_python="3.10")
     assert result.exit_code == 0
     assert filter_tempfile_ipynb(result.stdout) == snapshot("""\
 Updated 
