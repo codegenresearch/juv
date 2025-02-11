@@ -10,7 +10,6 @@ import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
 from ._pep723 import parse_inline_script_metadata, extract_inline_meta
-from ._add import add
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -50,10 +49,13 @@ def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> d
 
 
 def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
-    base_name = "Untitled"
-    for i in range(100):
-        filename = f"{base_name}{i if i > 0 else ''}.ipynb"
-        path = dir / filename
+    base_name = "Untitled.ipynb"
+    path = dir / base_name
+    if not path.exists():
+        return path
+
+    for i in range(1, 100):
+        path = dir / f"Untitled{i}.ipynb"
         if not path.exists():
             return path
 
@@ -61,9 +63,9 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 
 
 def init(
-    path: Path | None,
-    python: str | None,
-    packages: typing.Sequence[str],
+    path: Path | None = None,
+    python: str | None = None,
+    packages: typing.Sequence[str] = (),
 ) -> None:
     """Initialize a new notebook."""
     if not path:
@@ -77,6 +79,7 @@ def init(
     write_ipynb(notebook, path)
 
     if packages:
+        from ._add import add
         add(path, packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
