@@ -3,12 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 import tempfile
 import subprocess
-import typing
 import sys
 
 import rich
 
 from ._nbconvert import new_notebook, code_cell, write_ipynb
+from ._pep723 import parse_inline_script_metadata, extract_inline_meta
 
 
 def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> dict:
@@ -39,21 +39,25 @@ def new_notebook_with_inline_metadata(dir: Path, python: str | None = None) -> d
             cmd.extend(["--python", python])
         cmd.extend(["--script", f.name])
 
-        subprocess.run(cmd)
+        subprocess.run(cmd, check=True)
         f.seek(0)
         contents = f.read().strip()
-        notebook = new_notebook(cells=[code_cell(contents, hidden=True)])
+        inline_meta, script = extract_inline_meta(contents)
+        cells = [code_cell(script, hidden=True)]
+        if inline_meta:
+            cells.insert(0, code_cell(inline_meta.strip(), hidden=True))
+        notebook = new_notebook(cells=cells)
 
     return notebook
 
 
 def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
-    if not (dir / "Untitled.ipynb").exists():
-        return dir / "Untitled.ipynb"
-
-    for i in range(1, 100):
-        if not (dir / f"Untitled{i}.ipynb").exists():
-            return dir / f"Untitled{i}.ipynb"
+    base_name = "Untitled"
+    for i in range(100):
+        filename = f"{base_name}{i if i > 0 else ''}.ipynb"
+        path = dir / filename
+        if not path.exists():
+            return path
 
     raise ValueError("Could not find an available UntitledX.ipynb")
 
@@ -61,22 +65,16 @@ def get_first_non_conflicting_untitled_ipynb(dir: Path) -> Path:
 def init(
     path: Path | None,
     python: str | None,
-    packages: typing.Sequence[str] = [],
 ) -> None:
     """Initialize a new notebook."""
     if not path:
         path = get_first_non_conflicting_untitled_ipynb(Path.cwd())
 
-    if not path.suffix == ".ipynb":
+    if path.suffix != ".ipynb":
         rich.print("File must have a `[cyan].ipynb[/cyan]` extension.", file=sys.stderr)
         sys.exit(1)
 
     notebook = new_notebook_with_inline_metadata(path.parent, python)
     write_ipynb(notebook, path)
-
-    if len(packages) > 0:
-        from ._add import add
-
-        add(path=path, packages=packages, requirements=None)
 
     rich.print(f"Initialized notebook at `[cyan]{path.resolve().absolute()}[/cyan]`")
