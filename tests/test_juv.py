@@ -1,7 +1,6 @@
 import pytest
 from pathlib import Path
 from unittest.mock import patch
-import pathlib
 import re
 import os
 from inline_snapshot import snapshot
@@ -71,7 +70,7 @@ def filter_ids(output: str) -> str:
     return re.sub(r'"id": "[a-zA-Z0-9-]+"', '"id": "<ID>"', output)
 
 
-def test_to_notebook_script(tmp_path: pathlib.Path):
+def test_to_notebook_script(tmp_path: Path):
     script = tmp_path / "script.py"
     script.write_text("""# /// script
 # dependencies = ["numpy"]
@@ -240,7 +239,7 @@ def filter_tempfile_ipynb(output: str) -> str:
     return re.sub(pattern, replacement, output)
 
 
-def test_add_creates_inline_meta(tmp_path: pathlib.Path) -> None:
+def test_add_creates_inline_meta(tmp_path: Path) -> None:
     nb = tmp_path / "foo.ipynb"
     write_ipynb(new_notebook(), nb)
     result = invoke(["add", str(nb), "polars==1", "anywidget"], uv_python="3.11")
@@ -280,7 +279,7 @@ Updated
 """)
 
 
-def test_add_prepends_script_meta(tmp_path: pathlib.Path) -> None:
+def test_add_prepends_script_meta(tmp_path: Path) -> None:
     path = tmp_path / "empty.ipynb"
     write_ipynb(
         new_notebook(cells=[new_code_cell("print('Hello, world!')")]),
@@ -333,7 +332,7 @@ Updated
 """)
 
 
-def test_add_updates_existing_meta(tmp_path: pathlib.Path) -> None:
+def test_add_updates_existing_meta(tmp_path: Path) -> None:
     path = tmp_path / "empty.ipynb"
     nb = new_notebook(
         cells=[
@@ -382,7 +381,7 @@ Updated
 """)
 
 
-def test_init_creates_notebook_with_inline_meta(tmp_path: pathlib.Path) -> None:
+def test_init_creates_notebook_with_inline_meta(tmp_path: Path) -> None:
     path = tmp_path / "empty.ipynb"
     result = invoke(["init", str(path)], uv_python="3.13")
     assert result.exit_code == 0
