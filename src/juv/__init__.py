@@ -59,7 +59,12 @@ def init(
     """Initialize a new notebook with optional package dependencies."""
     from ._init import init
 
-    init(path=Path(file) if file else None, python=python, packages=with_args)
+    # Process with_args to handle comma-separated values
+    packages = []
+    for arg in with_args:
+        packages.extend(arg.split(','))
+
+    init(path=Path(file) if file else None, python=python, packages=packages)
 
 
 @cli.command()
