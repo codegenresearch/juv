@@ -49,21 +49,15 @@ def info():
 
 @cli.command()
 @click.argument("file", type=click.Path(exists=False), required=False)
-@click.option("--with", "with_args", type=click.STRING, multiple=True)
 @click.option("--python", type=click.STRING, required=False)
 def init(
     file: str | None,
-    with_args: tuple[str, ...],
     python: str | None,
 ) -> None:
     """Initialize a new notebook."""
     from ._init import init
 
-    init(
-        path=Path(file) if file else None,
-        python=python,
-        packages=[p for w in with_args for p in w.split(",")],
-    )
+    init(path=Path(file) if file else None, python=python)
 
 
 @cli.command()
@@ -112,17 +106,4 @@ def upgrade_legacy_jupyter_command(args: list[str]) -> None:
             continue
         if (
             arg.startswith(("lab", "notebook", "nbclassic"))
-            and not args[i - 1].startswith("--")  # Make sure previous arg isn't a flag
-            and not arg.startswith("--")
-        ):
-            rich.print(
-                f"[bold]Warning:[/bold] The command '{arg}' is deprecated. "
-                f"Please use 'run' with `--jupyter={arg}` or set JUV_JUPYTER={arg}"
-            )
-            os.environ["JUV_JUPYTER"] = arg
-            args[i] = "run"
-
-
-def main():
-    upgrade_legacy_jupyter_command(sys.argv)
-    cli()
+            and not args[i - 1].startswith("--")  # Make sure previous arg isn't a flag\n            and not arg.startswith("--")\n        ):\n            rich.print(\n                f"[bold]Warning:[/bold] The command '{arg}' is deprecated. "\n                f"Please use 'run' with `--jupyter={arg}` or set JUV_JUPYTER={arg}"\n            )\n            os.environ["JUV_JUPYTER"] = arg\n            args[i] = "run"\n\n\ndef main():\n    upgrade_legacy_jupyter_command(sys.argv)\n    cli()
