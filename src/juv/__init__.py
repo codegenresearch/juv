@@ -7,9 +7,7 @@ import os
 from pathlib import Path
 import click
 import shutil
-
 import rich
-
 
 def assert_uv_available():
     if shutil.which("uv") is None:
@@ -21,107 +19,67 @@ def assert_uv_available():
         )
         sys.exit(1)
 
-
 @click.group()
 def cli():
-    """A wrapper around uv to launch ephemeral Jupyter npunotebooks."""
-
+    """A wrapper around uv to launch ephemeral Jupyter notebooks."""
 
 @cli.command()
-def version() -> None:
+def version():
     """Display juv's version."""
     from ._version import __version__
-
     print(f"juv {__version__}")
-
 
 @cli.command()
 def info():
     """Display juv and uv versions."""
-    from ._version import __version__
-
-    import subprocess
-
-    print(f"juv {__version__}")
-    uv_version = subprocess.run(["uv", "version"], capture_output=True, text=True)
-    print(uv_version.stdout)
-
+    from ._version import __version__ as juv_version
+    print(f"juv {juv_version}")
+    uv_version = shutil.which("uv")
+    if uv_version:
+        print(f"uv {uv_version}")
+    else:
+        rich.print("Error: 'uv' command not found.", file=sys.stderr)
 
 @cli.command()
 @click.argument("file", type=click.Path(exists=False), required=False)
-@click.option("--with", "with_args", type=click.STRING, multiple=True)
 @click.option("--python", type=click.STRING, required=False)
-def init(
-    file: str | None,
-    with_args: tuple[str, ...],
-    python: str | None,
-) -> None:
+def init(file: str | None, python: str | None):
     """Initialize a new notebook."""
-    from ._init import init
-
-    init(
-        path=Path(file) if file else None,
-        python=python,
-        packages=[p for w in with_args for p in w.split(",")],
-    )
-
+    from ._init import init as init_notebook
+    init_notebook(path=Path(file) if file else None, python=python)
 
 @cli.command()
 @click.argument("file", type=click.Path(exists=True), required=True)
 @click.option("--requirements", "-r", type=click.Path(exists=True), required=False)
 @click.argument("packages", nargs=-1)
-def add(file: str, requirements: str | None, packages: tuple[str, ...]) -> None:
+def add(file: str, requirements: str | None, packages: tuple[str, ...]):
     """Add dependencies to the notebook."""
-    from ._add import add
-
-    add(path=Path(file), packages=packages, requirements=requirements)
+    from ._add import add as add_dependencies
+    add_dependencies(path=Path(file), packages=packages, requirements=requirements)
     rich.print(f"Updated `[cyan]{Path(file).resolve().absolute()}[/cyan]`")
-
 
 @cli.command()
 @click.argument("file", type=click.Path(exists=True), required=True)
-@click.option(
-    "--jupyter",
-    required=False,
-    help="The Jupyter frontend to use. [env: JUV_JUPYTER=]",
-)
+@click.option("--jupyter", required=False, help="The Jupyter frontend to use. [env: JUV_JUPYTER=]")
 @click.option("--with", "with_args", type=click.STRING, multiple=True)
 @click.option("--python", type=click.STRING, required=False)
-def run(
-    file: str,
-    jupyter: str | None,
-    with_args: tuple[str, ...],
-    python: str | None,
-) -> None:
+def run(file: str, jupyter: str | None, with_args: tuple[str, ...], python: str | None):
     """Launch a notebook or script."""
+    from ._run import run as launch_notebook
+    launch_notebook(path=Path(file), jupyter=jupyter, python=python, with_args=with_args)
 
-    from ._run import run
-
-    run(
-        path=Path(file),
-        jupyter=jupyter,
-        python=python,
-        with_args=with_args,
-    )
-
-
-def upgrade_legacy_jupyter_command(args: list[str]) -> None:
+def upgrade_legacy_jupyter_command(args: list[str]):
     """Check legacy lab/notebook/nbclassic command usage and upgrade to 'run' with deprecation notice."""
     for i, arg in enumerate(args):
         if i == 0:
             continue
-        if (
-            arg.startswith(("lab", "notebook", "nbclassic"))
-            and not args[i - 1].startswith("--")  # Make sure previous arg isn't a flag
-            and not arg.startswith("--")
-        ):
+        if arg.startswith(("lab", "notebook", "nbclassic")) and not args[i - 1].startswith("--") and not arg.startswith("--"):
             rich.print(
                 f"[bold]Warning:[/bold] The command '{arg}' is deprecated. "
                 f"Please use 'run' with `--jupyter={arg}` or set JUV_JUPYTER={arg}"
             )
             os.environ["JUV_JUPYTER"] = arg
             args[i] = "run"
-
 
 def main():
     upgrade_legacy_jupyter_command(sys.argv)
