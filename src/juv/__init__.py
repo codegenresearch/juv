@@ -24,7 +24,7 @@ def assert_uv_available():
 
 @click.group()
 def cli():
-    """A wrapper around uv to launch ephemeral Jupyter npunotebooks."""
+    """A wrapper around uv to launch ephemeral Jupyter notebooks."""
 
 
 @cli.command()
@@ -38,32 +38,28 @@ def version() -> None:
 @cli.command()
 def info():
     """Display juv and uv versions."""
-    from ._version import __version__
+    from ._version import __version__ as juv_version
 
     import subprocess
 
-    print(f"juv {__version__}")
+    print(f"juv {juv_version}")
     uv_version = subprocess.run(["uv", "version"], capture_output=True, text=True)
-    print(uv_version.stdout)
+    print(uv_version.stdout.strip())
 
 
 @cli.command()
 @click.argument("file", type=click.Path(exists=False), required=False)
-@click.option("--with", "with_args", type=click.STRING, multiple=True)
 @click.option("--python", type=click.STRING, required=False)
+@click.option("--packages", "-p", type=click.STRING, multiple=True, help="Add package dependencies during initialization.")
 def init(
     file: str | None,
-    with_args: tuple[str, ...],
     python: str | None,
+    packages: tuple[str, ...],
 ) -> None:
     """Initialize a new notebook."""
     from ._init import init
 
-    init(
-        path=Path(file) if file else None,
-        python=python,
-        packages=[p for w in with_args for p in w.split(",")],
-    )
+    init(path=Path(file) if file else None, python=python, packages=packages)
 
 
 @cli.command()
@@ -112,17 +108,4 @@ def upgrade_legacy_jupyter_command(args: list[str]) -> None:
             continue
         if (
             arg.startswith(("lab", "notebook", "nbclassic"))
-            and not args[i - 1].startswith("--")  # Make sure previous arg isn't a flag
-            and not arg.startswith("--")
-        ):
-            rich.print(
-                f"[bold]Warning:[/bold] The command '{arg}' is deprecated. "
-                f"Please use 'run' with `--jupyter={arg}` or set JUV_JUPYTER={arg}"
-            )
-            os.environ["JUV_JUPYTER"] = arg
-            args[i] = "run"
-
-
-def main():
-    upgrade_legacy_jupyter_command(sys.argv)
-    cli()
+            and not args[i - 1].startswith("--")  # Make sure previous arg isn't a flag\n            and not arg.startswith("--")\n        ):\n            rich.print(\n                f"[bold]Warning:[/bold] The command '{arg}' is deprecated. "\n                f"Please use 'run' with `--jupyter={arg}` or set JUV_JUPYTER={arg}"\n            )\n            os.environ["JUV_JUPYTER"] = arg\n            args[i] = "run"\n\n\ndef main():\n    upgrade_legacy_jupyter_command(sys.argv)\n    cli()
